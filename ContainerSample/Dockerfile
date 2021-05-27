@@ -11,12 +11,20 @@ RUN dotnet publish "ContainerSample.csproj" -c Release -o /app/publish \
   /p:PublishTrimmed=true \
   /p:PublishSingleFile=true
 
-# use different image
 FROM mcr.microsoft.com/dotnet/runtime-deps:5.0-alpine AS final
+
+# create a new user and change directory ownership
+RUN adduser --disabled-password \
+  --home /app \
+  --gecos '' dotnetuser && chown -R dotnetuser /app
+
+# impersonate into the new user
+USER dotnetuser
 WORKDIR /app
 
-# just expose port 80
-EXPOSE 80
+# use port 5000 because
+EXPOSE 5000
 COPY --from=publish /app/publish .
 
-ENTRYPOINT ["./ContainerSample"]
+# instruct Kestrel to expose API on port 5000
+ENTRYPOINT ["./ContainerSample", "--urls", "http://localhost:5000"]
