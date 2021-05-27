@@ -13,18 +13,16 @@ RUN dotnet publish "ContainerSample.csproj" -c Release -o /app/publish \
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:5.0-alpine AS final
 
-# create a new user and change directory ownership
 RUN adduser --disabled-password \
   --home /app \
   --gecos '' dotnetuser && chown -R dotnetuser /app
 
-# impersonate into the new user
+# upgrade musl to remove potential vulnerability
+RUN apk upgrade musl
+
 USER dotnetuser
 WORKDIR /app
-
-# use port 5000 because
 EXPOSE 5000
 COPY --from=publish /app/publish .
 
-# instruct Kestrel to expose API on port 5000
 ENTRYPOINT ["./ContainerSample", "--urls", "http://localhost:5000"]
