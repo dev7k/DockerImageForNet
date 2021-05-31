@@ -25,4 +25,4 @@ WORKDIR /app
 EXPOSE 5000
 COPY --from=publish /app/publish .
 
-ENTRYPOINT ["./ContainerSample", "--urls", "http://localhost:5000"]
+ENTRYPOINT ["./ContainerSample"]
